@@ -185,14 +185,21 @@ You can deploy via Vercel's web interface or CLI. We'll use the web interface:
 
 Click **"Environment Variables"** and add:
 
+**Option 1 (Recommended - with /api):**
 ```
 REACT_APP_API_URL=https://track-trips.onrender.com/api
 ```
 
+**Option 2 (Without /api - code will auto-append it):**
+```
+REACT_APP_API_URL=https://track-trips.onrender.com
+```
+
 ⚠️ **Important**: 
-- Make sure the URL ends with `/api` and uses `https://`
+- The code automatically ensures `/api` is appended, so either format works
+- Make sure to use `https://` (not `http://`)
 - The backend URL is: `https://track-trips.onrender.com`
-- The frontend will default to this URL if the environment variable is not set
+- If you don't set this variable, it defaults to `https://track-trips.onrender.com/api`
 
 ### 3.5 Deploy
 

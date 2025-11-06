@@ -1,7 +1,21 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://track-trips.onrender.com/api';
+// Ensure API URL always ends with /api
+const getApiBaseUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL || 'https://track-trips.onrender.com';
+  // Remove trailing slash if present
+  const cleanUrl = envUrl.replace(/\/$/, '');
+  // Ensure /api is appended
+  return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Log API base URL in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Base URL:', API_BASE_URL);
+}
 
 // Create axios instance
 const api = axios.create({
