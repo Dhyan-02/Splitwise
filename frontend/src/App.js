@@ -60,7 +60,28 @@ function App() {
             />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#111827',
+                color: '#f9fafb',
+                border: '1px solid #374151',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#10b981',
+                  secondary: '#111827',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#111827',
+                },
+              },
+            }}
+          />
         </Router>
       </AuthProvider>
     </ThemeProvider>

@@ -25,6 +25,13 @@ export const SettlementsTab = ({ tripId }) => {
     }
   };
 
+  const formatCurrency = (amount) => {
+    const sign = amount > 0 ? '+' : amount < 0 ? '-' : '';
+    const abs = Math.abs(amount);
+    const formatted = abs.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `${sign}Rs ${formatted}`;
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading settlements...</div>;
   }
@@ -61,24 +68,23 @@ export const SettlementsTab = ({ tripId }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Balances</h3>
         <div className="space-y-3">
           {Object.entries(settlements.balances).map(([username, balance]) => (
-            <div
-              key={username}
-              className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-            >
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{username}</p>
+            <div key={username} className="flex items-start justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="min-w-0 text-sm text-gray-700 dark:text-gray-300">
+                <p className="font-medium text-gray-900 dark:text-white truncate">{username}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Paid: Rs {balance.paid.toFixed(2)} | Owes: Rs {balance.owes.toFixed(2)}
+                  <span>Paid: Rs {balance.paid.toFixed(2)}</span>
+                  <span className="mx-2 hidden sm:inline">|</span>
+                  <span className="block sm:inline">Owes: Rs {balance.owes.toFixed(2)}</span>
                 </p>
               </div>
-              <div className={`text-lg font-bold ${
+              <div className={`shrink-0 text-right text-base font-bold ${
                 balance.net > 0 
                   ? 'text-green-600' 
                   : balance.net < 0 
                   ? 'text-red-600' 
                   : 'text-gray-600'
               }`}>
-                {balance.net > 0 ? '+' : ''}Rs {balance.net.toFixed(2)}
+                {formatCurrency(balance.net)}
               </div>
             </div>
           ))}

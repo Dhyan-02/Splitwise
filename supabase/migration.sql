@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS trips (
   start_date DATE,
   end_date DATE,
   description TEXT,
+  created_by VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -72,8 +73,7 @@ CREATE TABLE IF NOT EXISTS places_visited (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   photo_url TEXT,
-  latitude DECIMAL(10, 8),
-  longitude DECIMAL(11, 8),
+  location VARCHAR(255),
   visited_time TIMESTAMP DEFAULT NOW()
 );
 

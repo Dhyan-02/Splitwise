@@ -11,7 +11,7 @@ export const addExpense = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -69,7 +69,7 @@ export const getTripExpenses = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -112,7 +112,7 @@ export const deleteExpense = async (req, res, next) => {
       .from('expenses')
       .select('trip_id, payer_username')
       .eq('id', expense_id)
-      .single();
+      .maybeSingle();
 
     if (expError) throw expError;
     if (!expense) {
@@ -124,7 +124,7 @@ export const deleteExpense = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', expense.trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
 

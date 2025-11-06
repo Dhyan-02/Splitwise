@@ -119,23 +119,25 @@ export const Dashboard = () => {
                 key={group.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="card hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col"
+                className="card hover:shadow-lg transition-shadow h-full flex flex-col"
               >
-                <div className="flex items-start justify-between mb-4 gap-3">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white break-words">
-                    {group.name}
-                  </h3>
-                  {group.has_password && (
-                    <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">
-                      Protected
-                    </span>
-                  )}
-                </div>
-                <Link
-                  to={`/groups/${group.id}`}
-                  className="mt-auto text-primary-600 hover:text-primary-700 text-sm font-medium"
-                >
-                  View Details →
+                <Link to={`/groups/${group.id}`} className="flex-1 flex flex-col">
+                  <div className="flex items-start justify-between mb-3 gap-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white break-words">
+                      {group.name}
+                    </h3>
+                    {group.has_password && (
+                      <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">
+                        Protected
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Created by <span className="font-medium">@{group.created_by}</span></p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">Manage members and trips for this group.</p>
+                  <div className="mt-auto flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <span className="text-xs text-gray-500">Open group</span>
+                    <span className="text-primary-600 hover:text-primary-700 text-sm font-medium">View Details →</span>
+                  </div>
                 </Link>
               </motion.div>
             ))}
@@ -167,6 +169,7 @@ export const Dashboard = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 break-words">
                     {trip.group_name}
                   </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Created by <span className="font-medium">@{trip.created_by}</span></p>
                   {trip.location && (
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
                     <FaMapMarkerAlt className="h-4 w-4 mr-1" />

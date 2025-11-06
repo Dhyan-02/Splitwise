@@ -110,9 +110,10 @@ export const getCurrentUser = async (req, res, next) => {
       .from('users')
       .select('username, email, full_name, created_at')
       .eq('username', req.user.username)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'User not found' });
     res.json(data);
   } catch (err) {
     next(err);

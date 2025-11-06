@@ -3,7 +3,7 @@ import { supabase } from '../services/supabaseClient.js';
 
 export const addPlace = async (req, res, next) => {
   try {
-    const { trip_id, name, description, latitude, longitude } = req.body;
+    const { trip_id, name, description, location } = req.body;
     const username = req.user.username;
 
     // Verify access to trip
@@ -11,7 +11,7 @@ export const addPlace = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -53,7 +53,7 @@ export const addPlace = async (req, res, next) => {
 
     const { data, error } = await supabase
       .from('places_visited')
-      .insert([{ trip_id, name, description, latitude, longitude, photo_url }])
+      .insert([{ trip_id, name, description, location, photo_url, created_by: username }])
       .select();
 
     if (error) throw error;
@@ -73,7 +73,7 @@ export const getTripPlaces = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -115,7 +115,7 @@ export const updatePlace = async (req, res, next) => {
       .from('places_visited')
       .select('trip_id, trips(group_id)')
       .eq('id', place_id)
-      .single();
+      .maybeSingle();
 
     if (placeError) throw placeError;
     if (!place) {
@@ -156,7 +156,7 @@ export const deletePlace = async (req, res, next) => {
       .from('places_visited')
       .select('trip_id, trips(group_id)')
       .eq('id', place_id)
-      .single();
+      .maybeSingle();
 
     if (placeError) throw placeError;
     if (!place) {

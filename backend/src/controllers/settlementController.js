@@ -11,7 +11,7 @@ export const getTripSettlements = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
