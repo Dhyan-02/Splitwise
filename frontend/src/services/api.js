@@ -1,0 +1,106 @@
+// src/services/api.js
+import axios from 'axios';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+// Create axios instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth API
+export const authAPI = {
+  register: (data) => api.post('/users/register', data),
+  login: (data) => api.post('/users/login', data),
+  getCurrentUser: () => api.get('/users/me'),
+};
+
+// Groups API
+export const groupsAPI = {
+  create: (data) => api.post('/groups/create', data),
+  join: (data) => api.post('/groups/join', data),
+  joinByInvite: (token) => api.post('/groups/join/invite', { token }),
+  getMyGroups: () => api.get('/groups/my-groups'),
+  getById: (groupId) => api.get(`/groups/${groupId}`),
+  getMembers: (groupId) => api.get(`/groups/${groupId}/members`),
+  createInvite: (groupId) => api.post(`/groups/${groupId}/invite`),
+};
+
+// Trips API
+export const tripsAPI = {
+  create: (data) => api.post('/trips', data),
+  getGroupTrips: (groupId) => api.get(`/trips/group/${groupId}`),
+  getById: (tripId) => api.get(`/trips/${tripId}`),
+  update: (tripId, data) => api.put(`/trips/${tripId}`, data),
+  delete: (tripId) => api.delete(`/trips/${tripId}`),
+};
+
+// Expenses API
+export const expensesAPI = {
+  add: (data) => api.post('/expenses', data),
+  getTripExpenses: (tripId) => api.get(`/expenses/trip/${tripId}`),
+  delete: (expenseId) => api.delete(`/expenses/${expenseId}`),
+};
+
+// Settlements API
+export const settlementsAPI = {
+  getTripSettlements: (tripId) => api.get(`/settlements/trips/${tripId}`),
+};
+
+// Places API
+export const placesAPI = {
+  add: (data, photoFile) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      formData.append(key, data[key]);
+    });
+    if (photoFile) {
+      formData.append('photo', photoFile);
+    }
+    return api.post('/places', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  getTripPlaces: (tripId) => api.get(`/places/trip/${tripId}`),
+  update: (placeId, data) => api.put(`/places/${placeId}`, data),
+  delete: (placeId) => api.delete(`/places/${placeId}`),
+};
+
+// Analytics API
+export const analyticsAPI = {
+  getTripAnalytics: (tripId) => api.get(`/analytics/trips/${tripId}`),
+};
+
+export default api;
