@@ -186,17 +186,13 @@ You can deploy via Vercel's web interface or CLI. We'll use the web interface:
 Click **"Environment Variables"** and add:
 
 ```
-REACT_APP_API_URL=https://your-backend-url.onrender.com/api
+REACT_APP_API_URL=https://track-trips.onrender.com/api
 ```
 
-**Replace `your-backend-url.onrender.com` with your actual Render backend URL** (from Step 2.4)
-
-**Example:**
-```
-REACT_APP_API_URL=https://splitwise-backend.onrender.com/api
-```
-
-⚠️ **Important**: Make sure the URL ends with `/api` and uses `https://`
+⚠️ **Important**: 
+- Make sure the URL ends with `/api` and uses `https://`
+- The backend URL is: `https://track-trips.onrender.com`
+- The frontend will default to this URL if the environment variable is not set
 
 ### 3.5 Deploy
 
@@ -223,22 +219,12 @@ If you get CORS errors, update your backend:
 3. The backend uses `app.use(cors())` which allows all origins
 4. For production, you might want to restrict CORS to your Vercel domain
 
-**Optional - Update CORS in backend** (if needed):
+**CORS is already configured in the backend** to allow:
+- `https://track-trips.vercel.app` (production frontend)
+- `http://localhost:3000` (local development)
+- `http://localhost:3001` (alternative local port)
 
-Edit `Splitwise/backend/src/app.js`:
-
-```javascript
-// Replace this line:
-app.use(cors());
-
-// With this (replace with your Vercel URL):
-app.use(cors({
-  origin: ['https://your-frontend.vercel.app', 'http://localhost:3000'],
-  credentials: true
-}));
-```
-
-Then commit and push - Render will auto-deploy.
+The backend CORS configuration is already set up in `Splitwise/backend/src/app.js`. No changes needed!
 
 ---
 
@@ -279,8 +265,8 @@ Then commit and push - Render will auto-deploy.
 ## 🔗 Quick Reference Links
 
 ### Your Deployed URLs
-- **Backend**: `https://your-backend-name.onrender.com`
-- **Frontend**: `https://your-frontend-name.vercel.app`
+- **Backend**: `https://track-trips.onrender.com`
+- **Frontend**: `https://track-trips.vercel.app`
 
 ### Dashboard Links
 - **Render Dashboard**: [https://dashboard.render.com](https://dashboard.render.com)
@@ -320,8 +306,10 @@ NODE_ENV=production
 
 ### Frontend (Vercel)
 ```
-REACT_APP_API_URL=https://your-backend.onrender.com/api
+REACT_APP_API_URL=https://track-trips.onrender.com/api
 ```
+
+**Note**: The frontend code defaults to `https://track-trips.onrender.com/api` if the environment variable is not set, so this is optional but recommended for clarity.
 
 ---
 

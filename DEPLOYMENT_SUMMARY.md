@@ -52,8 +52,10 @@ npm install
    - **Framework**: Create React App
 5. Add Environment Variable:
    ```
-   REACT_APP_API_URL=https://your-backend.onrender.com/api
+   REACT_APP_API_URL=https://track-trips.onrender.com/api
    ```
+   
+   **Note**: The frontend defaults to this URL if not set, but it's recommended to set it explicitly.
 6. Deploy!
 
 **Full Guide**: [DEPLOYMENT.md](./DEPLOYMENT.md#step-3-deploy-frontend-to-vercel)
@@ -92,7 +94,7 @@ npm install
 ### Frontend (Vercel)
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `REACT_APP_API_URL` | Backend API URL | `https://backend.onrender.com/api` |
+| `REACT_APP_API_URL` | Backend API URL | `https://track-trips.onrender.com/api` |
 
 ## ✅ Pre-Deployment Checklist
 
