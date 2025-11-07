@@ -15,6 +15,7 @@ export const MembersTab = ({ tripId, trip }) => {
   const [targetMember, setTargetMember] = useState(null);
   const [confirmText, setConfirmText] = useState('');
   const [settlementError, setSettlementError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     loadMembers();
@@ -97,7 +98,10 @@ export const MembersTab = ({ tripId, trip }) => {
     return <div className="text-center py-8">Loading members...</div>;
   }
 
-  const isCreator = trip?.created_by === JSON.parse(localStorage.getItem('user'))?.username;
+  const currentUser = JSON.parse(localStorage.getItem('user'))?.username;
+  const isCreator = trip?.created_by === currentUser;
+  const isGroupCreator = (trip?.groups?.created_by || trip?.group_created_by) === currentUser || isCreator;
+  const groupId = trip?.groups?.id || trip?.group_id;
   const availableForAdd = groupMembers.filter(gm => !members.find(m => m.username === gm.username));
 
   return (
@@ -288,12 +292,62 @@ export const MembersTab = ({ tripId, trip }) => {
               </p>
             </div>
 
-            <button
-              onClick={() => setSettlementError(null)}
-              className="w-full btn-primary"
-            >
-              Understood
-            </button>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                onClick={() => setSettlementError(null)}
+                className="btn-secondary w-full"
+              >
+                Close
+              </button>
+              {isGroupCreator && (
+                <button
+                  onClick={async () => {
+                    if (!groupId || !settlementError?.member?.username) return;
+                    if (!window.confirm(`Remove @${settlementError.member.username} from the group as well?`)) return;
+                    try {
+                      setActionLoading(true);
+                      await groupsAPI.removeMember(groupId, settlementError.member.username);
+                      toast.success('Member removed from group');
+                      setSettlementError(null);
+                      loadMembers();
+                    } catch (e) {
+                      toast.error(e.response?.data?.error || 'Failed to remove from group');
+                    } finally {
+                      setActionLoading(false);
+                    }
+                  }}
+                  disabled={actionLoading}
+                  className="btn-primary w-full"
+                >
+                  {actionLoading ? 'Working…' : 'Remove From Group'}
+                </button>
+              )}
+            </div>
+
+            {isGroupCreator && (
+              <div className="mt-3">
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Are you sure you want to delete this entire trip? This cannot be undone.')) return;
+                    try {
+                      setActionLoading(true);
+                      await tripsAPI.delete(tripId);
+                      toast.success('Trip deleted');
+                      // optional: redirect handled by page component; here just close modal
+                      setSettlementError(null);
+                    } catch (e) {
+                      toast.error(e.response?.data?.error || 'Failed to delete trip');
+                    } finally {
+                      setActionLoading(false);
+                    }
+                  }}
+                  disabled={actionLoading}
+                  className="w-full mt-2 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                >
+                  {actionLoading ? 'Deleting…' : 'Delete Trip'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
