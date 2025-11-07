@@ -170,7 +170,7 @@ export const deletePlace = async (req, res, next) => {
     // Get place and verify access
     const { data: place, error: placeError } = await supabase
       .from('places_visited')
-      .select('trip_id, trips(group_id)')
+      .select('trip_id, created_by, trips(group_id)')
       .eq('id', place_id)
       .maybeSingle();
 
@@ -188,6 +188,11 @@ export const deletePlace = async (req, res, next) => {
 
     if (!membership) {
       return res.status(403).json({ error: 'You are not a member of this group' });
+    }
+
+    // Only uploader can delete
+    if ((place.created_by || '').trim().toLowerCase() !== (username || '').trim().toLowerCase()) {
+      return res.status(403).json({ error: 'Only the uploader can delete this place' });
     }
 
     const { error } = await supabase.from('places_visited').delete().eq('id', place_id);

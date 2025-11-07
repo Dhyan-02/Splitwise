@@ -122,13 +122,15 @@ export const PlacesTab = ({ tripId }) => {
                           </div>
                         )}
                         <div className={`mt-4`}>
-                          <button
-                            onClick={() => handleDelete(place.id)}
-                            className="text-red-600 hover:text-red-700 text-sm inline-flex items-center"
-                          >
-                            <FaTrash className="h-4 w-4 mr-2" />
-                            Delete
-                          </button>
+                          {JSON.parse(localStorage.getItem('user'))?.username === place.created_by && (
+                            <button
+                              onClick={() => handleDelete(place.id)}
+                              className="text-red-600 hover:text-red-700 text-sm inline-flex items-center"
+                            >
+                              <FaTrash className="h-4 w-4 mr-2" />
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>

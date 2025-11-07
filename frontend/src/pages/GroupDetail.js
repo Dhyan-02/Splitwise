@@ -555,9 +555,9 @@ export const GroupDetail = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     <span className="font-medium">Balance:</span>{' '}
                     {settlementError.details.balance > 0 ? (
-                      <span className="text-green-600 dark:text-green-400">+${Math.abs(settlementError.details.balance).toFixed(2)} (owed to them)</span>
+                      <span className="text-green-600 dark:text-green-400">+₹{Math.abs(settlementError.details.balance).toFixed(2)} (owed to them)</span>
                     ) : (
-                      <span className="text-red-600 dark:text-red-400">-${Math.abs(settlementError.details.balance).toFixed(2)} (they owe)</span>
+                      <span className="text-red-600 dark:text-red-400">-₹{Math.abs(settlementError.details.balance).toFixed(2)} (they owe)</span>
                     )}
                   </p>
                 )}
@@ -581,7 +581,7 @@ export const GroupDetail = () => {
 
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
               <p className="text-xs text-blue-800 dark:text-blue-200">
-                <strong>Note:</strong> All balances must be settled to $0.00 before a member can be removed from the group.
+                <strong>Note:</strong> All balances must be settled to ₹0.00 before a member can be removed from the group.
               </p>
             </div>
 

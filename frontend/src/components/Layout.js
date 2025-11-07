@@ -23,7 +23,7 @@ export const Layout = ({ children }) => {
             <div className="flex items-center">
               <Link to="/dashboard" className="flex items-center space-x-2">
                 <FaUsers className="h-6 w-6 text-primary-600" />
-                <span className="text-xl font-bold text-gray-900 dark:text-white">Splitwise</span>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">TripSync</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">

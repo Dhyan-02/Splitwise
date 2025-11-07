@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { FaPlus, FaTrash, FaDollarSign } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaRupeeSign } from 'react-icons/fa';
 import { expensesAPI, tripsAPI } from '../../services/api';
 import { AddExpenseModal } from './AddExpenseModal';
 
@@ -90,7 +90,7 @@ export const ExpensesTab = ({ tripId }) => {
 
       {expenses.length === 0 ? (
         <div className="card text-center py-12">
-            <FaDollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <FaRupeeSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">No expenses yet. Add one to get started!</p>
         </div>
       ) : (

@@ -1,19 +1,15 @@
 // src/components/trips/SettlementsTab.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { FaArrowRight, FaDollarSign } from 'react-icons/fa';
+import { FaArrowRight, FaRupeeSign } from 'react-icons/fa';
 import { settlementsAPI } from '../../services/api';
 
 export const SettlementsTab = ({ tripId }) => {
   const [settlements, setSettlements] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadSettlements();
-  }, [tripId]);
-
-  const loadSettlements = async () => {
+  const loadSettlements = useCallback(async () => {
     try {
       setLoading(true);
       const response = await settlementsAPI.getTripSettlements(tripId);
@@ -23,7 +19,11 @@ export const SettlementsTab = ({ tripId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tripId]);
+
+  useEffect(() => {
+    loadSettlements();
+  }, [loadSettlements]);
 
   const formatCurrency = (amount) => {
     const sign = amount > 0 ? '+' : amount < 0 ? '-' : '';
@@ -106,7 +106,7 @@ export const SettlementsTab = ({ tripId }) => {
                 className="flex items-center justify-between p-4 bg-primary-50 dark:bg-primary-900 rounded-lg"
               >
                 <div className="flex items-center space-x-3">
-                    <FaDollarSign className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                    <FaRupeeSign className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white">
                       {settlement.from}
@@ -116,7 +116,7 @@ export const SettlementsTab = ({ tripId }) => {
                 </div>
                 <div className="flex items-center space-x-3">
                   <span className="text-xl font-bold text-gray-900 dark:text-white">
-                    Rs {settlement.amount.toFixed(2)}
+                    ₹{settlement.amount.toFixed(2)}
                   </span>
                   <FaArrowRight className="h-5 w-5 text-gray-400" />
                 </div>
@@ -131,7 +131,7 @@ export const SettlementsTab = ({ tripId }) => {
         </div>
       ) : (
         <div className="card text-center py-12">
-          <FaDollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <FaRupeeSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">All expenses are settled!</p>
         </div>
       )}

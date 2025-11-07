@@ -313,12 +313,12 @@ const checkMemberHasSettlements = async (group_id, memberUsername) => {
     if (memberInvolvedInSettlements) {
       const owesList = memberSettlements
         .filter(s => s.from === memberUsername)
-        .map(s => `${s.to} ($${s.amount.toFixed(2)})`)
+        .map(s => `${s.to} (₹${s.amount.toFixed(2)})`)
         .join(', ');
       
       const owedByList = memberSettlements
         .filter(s => s.to === memberUsername)
-        .map(s => `${s.from} ($${s.amount.toFixed(2)})`)
+        .map(s => `${s.from} (₹${s.amount.toFixed(2)})`)
         .join(', ');
 
       details = {
@@ -388,9 +388,9 @@ export const removeGroupMember = async (req, res, next) => {
         
         if (balance !== undefined) {
           if (balance > 0) {
-            errorMessage += `They are owed $${Math.abs(balance).toFixed(2)}. `;
+            errorMessage += `They are owed ₹${Math.abs(balance).toFixed(2)}. `;
           } else {
-            errorMessage += `They owe $${Math.abs(balance).toFixed(2)}. `;
+            errorMessage += `They owe ₹${Math.abs(balance).toFixed(2)}. `;
           }
         }
         

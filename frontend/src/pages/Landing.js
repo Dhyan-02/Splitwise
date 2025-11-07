@@ -74,7 +74,7 @@ export const Landing = () => {
           <div className="flex items-center gap-2">
             <FaUsers className="text-primary-600 text-2xl" />
             <span className="text-xl font-bold text-gray-900 dark:text-white">
-              SplitWiser
+              TripSync
             </span>
           </div>
           <div className="flex items-center gap-5">
@@ -220,7 +220,7 @@ export const Landing = () => {
       <footer className="bg-gray-950 text-gray-400 py-10 text-center">
         <div className="max-w-7xl mx-auto px-6">
           <p className="text-sm">
-            © {new Date().getFullYear()} SplitWiser. Built with ❤️ for smarter
+            © {new Date().getFullYear()} TripSync. Built with ❤️ for smarter
             group travel and shared spending.
           </p>
         </div>

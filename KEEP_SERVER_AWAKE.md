@@ -18,7 +18,7 @@ On Render's **free tier**, your backend service will **spin down after 15 minute
 2. **Create a Monitor**
    - Click **Add New Monitor**
    - **Monitor Type**: Select **HTTP(s)**
-   - **Friendly Name**: `Splitwise Backend Keep-Alive`
+   - **Friendly Name**: `TripSync Backend Keep-Alive`
    - **URL**: `https://track-trips.onrender.com`
    - **Monitoring Interval**: Select **5 minutes** (minimum for free tier)
    - Click **Create Monitor**
@@ -73,7 +73,7 @@ You can add a simple health check endpoint that responds quickly. This is alread
 
 Your backend already has:
 ```javascript
-app.get('/', (req, res) => res.send('✅ Splitwise backend running'));
+app.get('/', (req, res) => res.send('✅ TripSync backend running'));
 ```
 
 This endpoint is perfect for keep-alive pings!

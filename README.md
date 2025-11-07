@@ -1,4 +1,4 @@
-# Splitwise - Group Trip Expense Splitter
+# TripSync - Group Trip Expense Splitter
 
 A modern, full-featured expense splitting application for group trips, built with React, Node.js, Express, and Supabase.
 

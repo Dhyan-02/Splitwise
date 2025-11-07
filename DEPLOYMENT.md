@@ -1,6 +1,6 @@
-# 🚀 Deployment Guide - Splitwise App
+# 🚀 Deployment Guide - TripSync App
 
-This guide will walk you through deploying the Splitwise application:
+This guide will walk you through deploying the TripSync application:
 - **Backend**: Deploy to Render (Node.js/Express)
 - **Frontend**: Deploy to Vercel (React)
 
@@ -27,7 +27,7 @@ Before starting, make sure you have:
 1. Go to [https://supabase.com](https://supabase.com) and sign in
 2. Click **"New Project"**
 3. Fill in:
-   - **Project Name**: `splitwise` (or your choice)
+   - **Project Name**: `tripsync` (or your choice)
    - **Database Password**: Create a strong password (save it!)
    - **Region**: Choose closest to your users
 4. Click **"Create new project"** (takes 1-2 minutes)
@@ -148,12 +148,12 @@ NODE_ENV=production
 1. Click **"Create Web Service"**
 2. Render will start building and deploying (takes 2-5 minutes)
 3. Wait for status to show **"Live"** ✅
-4. Copy your backend URL (e.g., `https://splitwise-backend.onrender.com`)
+4. Copy your backend URL (e.g., `https://tripsync-backend.onrender.com`)
 
 ### 2.5 Test Backend
 
 1. Open your backend URL in browser
-2. You should see: `✅ Splitwise backend running`
+2. You should see: `✅ TripSync backend running`
 3. If you see an error, check the **"Logs"** tab in Render dashboard
 
 ---
@@ -206,12 +206,12 @@ REACT_APP_API_URL=https://track-trips.onrender.com
 1. Click **"Deploy"**
 2. Vercel will build and deploy (takes 2-3 minutes)
 3. Wait for deployment to complete
-4. You'll get a URL like: `https://splitwise-frontend.vercel.app`
+4. You'll get a URL like: `https://tripsync-frontend.vercel.app`
 
 ### 3.6 Test Frontend
 
 1. Open your Vercel URL
-2. You should see the Splitwise login page
+2. You should see the TripSync login page
 3. Try registering a new user
 4. If you see errors, check the browser console (F12) and Vercel deployment logs
 
@@ -331,7 +331,7 @@ REACT_APP_API_URL=https://track-trips.onrender.com/api
 
 ## 🎉 You're Done!
 
-Your Splitwise app should now be live and accessible to users worldwide!
+Your TripSync app should now be live and accessible to users worldwide!
 
 **Next Steps:**
 - Share your frontend URL with users
@@ -342,5 +342,5 @@ Your Splitwise app should now be live and accessible to users worldwide!
 ---
 
 **Last Updated**: 2024
-**Project**: Splitwise - Group Trip Expense Splitter
+**Project**: TripSync - Group Trip Expense Splitter
 
