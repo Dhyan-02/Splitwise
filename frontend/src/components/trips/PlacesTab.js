@@ -109,7 +109,13 @@ export const PlacesTab = ({ tripId }) => {
                       <div className={`md:w-7/12 md:pl-6 mt-4 md:mt-0`}>
                         <div className="flex items-start justify-between gap-3">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{place.name}</h3>
-                          <span className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 whitespace-nowrap">{new Date(place.visited_time).toLocaleString()}</span>
+                          <span className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                            {place.visited_time
+                              ? new Date(place.visited_time).toLocaleString('en-IN', {
+                                  timeZone: 'Asia/Kolkata',
+                                })
+                              : '—'}
+                          </span>
                         </div>
                         <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">Uploaded by <span className="font-medium">@{place.created_by || 'unknown'}</span></p>
                         {place.description && (

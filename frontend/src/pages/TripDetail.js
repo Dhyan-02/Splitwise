@@ -10,6 +10,7 @@ import { PlacesTab } from '../components/trips/PlacesTab';
 import { AnalyticsTab } from '../components/trips/AnalyticsTab';
 import { SpendingTab } from '../components/trips/SpendingTab';
 import { SettlementsTab } from '../components/trips/SettlementsTab';
+import { PaymentsTab } from '../components/trips/PaymentsTab';
 import { FaArrowLeft, FaMapMarkerAlt, FaCalendar, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +19,7 @@ const tabs = [
   { id: 'members', label: 'Members' },
   { id: 'places', label: 'Places' },
   { id: 'settlements', label: 'Settlements' },
+  { id: 'payments', label: 'Payments' },
   { id: 'analytics', label: 'Analytics' },
   { id: 'spending', label: 'Spending' },
 ];
@@ -175,6 +177,7 @@ export const TripDetail = () => {
         {activeTab === 'analytics' && <AnalyticsTab tripId={id} />}
         {activeTab === 'spending' && <SpendingTab tripId={id} />}
         {activeTab === 'settlements' && <SettlementsTab tripId={id} />}
+        {activeTab === 'payments' && <PaymentsTab tripId={id} />}
       </motion.div>
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">

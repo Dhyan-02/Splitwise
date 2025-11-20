@@ -8,6 +8,7 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import settlementRoutes from './routes/settlementRoutes.js';
 import placeRoutes from './routes/placeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import paymentsRoutes from './routes/paymentsRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);

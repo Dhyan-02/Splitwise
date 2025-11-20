@@ -113,6 +113,7 @@ export const SettlementsTab = ({ tripId }) => {
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">owes</p>
                   </div>
+
                 </div>
                 <div className="flex items-center space-x-3">
                   <span className="text-xl font-bold text-gray-900 dark:text-white">

@@ -1,5 +1,6 @@
 // src/controllers/expenseController.js
 import { supabase } from '../services/supabaseClient.js';
+import { syncPendingPaymentsForTrip } from './paymentsController.js';
 
 export const addExpense = async (req, res, next) => {
   try {
@@ -52,6 +53,12 @@ export const addExpense = async (req, res, next) => {
       .select();
 
     if (error) throw error;
+
+    try {
+      await syncPendingPaymentsForTrip(trip_id, payer_username);
+    } catch (syncErr) {
+      console.error('Failed to sync payments after adding expense:', syncErr);
+    }
 
     res.status(201).json({ message: 'Expense added', expense: expense[0] });
   } catch (err) {
@@ -163,6 +170,21 @@ export const deleteExpense = async (req, res, next) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
+    // Check if trip already has completed settlements
+    const { data: completedPayment, error: completedErr } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('trip_id', expense.trip_id)
+      .eq('status', 'completed')
+      .limit(1)
+      .maybeSingle();
+    if (completedErr && completedErr.code !== 'PGRST116') throw completedErr;
+    if (completedPayment) {
+      return res.status(400).json({
+        error: 'Cannot delete this expense because completed settlements exist for the trip. Undo settlements before deleting.',
+      });
+    }
+
     // Only payer can delete
     if (expense.payer_username !== username) {
       return res.status(403).json({ error: 'Only the payer can delete this expense' });
@@ -170,6 +192,12 @@ export const deleteExpense = async (req, res, next) => {
 
     const { error } = await supabase.from('expenses').delete().eq('id', expense_id);
     if (error) throw error;
+
+    try {
+      await syncPendingPaymentsForTrip(expense.trip_id, username);
+    } catch (syncErr) {
+      console.error('Failed to sync payments after expense delete:', syncErr);
+    }
 
     res.json({ message: 'Expense deleted successfully' });
   } catch (err) {

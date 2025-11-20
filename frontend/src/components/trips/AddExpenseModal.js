@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { expensesAPI, tripsAPI } from '../../services/api';
+import { expensesAPI, tripsAPI, paymentsAPI } from '../../services/api';
 
 export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: initialMembers }) => {
   const [formData, setFormData] = useState({
@@ -71,6 +71,11 @@ export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: i
       toast.success('Expense added successfully!');
       setFormData({ amount: '', description: '', category: '', participants: [] });
       onSuccess();
+      try {
+        await paymentsAPI.reset(tripId, { mode: 'soft' });
+      } catch (resetErr) {
+        console.error('Failed to sync payments after adding expense', resetErr);
+      }
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to add expense');
     } finally {

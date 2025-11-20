@@ -104,6 +104,21 @@ export const getTripSettlements = async (req, res, next) => {
       balances[username].net = balances[username].paid - balances[username].owes;
     });
 
+    // Subtract completed payments (receiver reduces net, payer increases net)
+    const { data: completedPayments, error: payErr } = await supabase
+      .from('payments')
+      .select('from_username, to_username, amount, status')
+      .eq('trip_id', trip_id)
+      .eq('status', 'completed');
+    if (payErr) throw payErr;
+    (completedPayments || []).forEach(p => {
+      const debtor = p.from_username;
+      const creditor = p.to_username;
+      const amt = parseFloat(p.amount) || 0;
+      if (balances[debtor]) balances[debtor].net += amt;
+      if (balances[creditor]) balances[creditor].net -= amt;
+    });
+
     // Filter balances to ONLY include trip members (remove any non-trip members)
     // This is a critical safety check - ensure ONLY trip members are in the response
     const filteredBalances = {};

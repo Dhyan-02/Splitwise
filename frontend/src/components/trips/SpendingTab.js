@@ -87,13 +87,24 @@ export const SpendingTab = ({ tripId }) => {
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
                 data={data}
-                margin={{ top: 10, right: 20, left: 0, bottom: 20 }}
+                margin={{ top: 10, right: 16, left: 0, bottom: 30 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="username" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
+                <XAxis
+                  dataKey="username"
+                  tick={{ fontSize: 11 }}
+                  interval={0}
+                  angle={45}
+                  textAnchor="start"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 12 }} width={45} />
                 <Tooltip
-                  formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                  formatter={(value, _, payload) => [
+                    `₹${Number(value).toLocaleString('en-IN')}`,
+                    payload?.name || 'Amount',
+                  ]}
+                  contentStyle={{ fontSize: 12 }}
                 />
                 <Legend />
                 <Bar

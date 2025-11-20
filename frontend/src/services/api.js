@@ -2,13 +2,35 @@
 import axios from 'axios';
 
 // Ensure API URL always ends with /api
+// const getApiBaseUrl = () => {
+//   const envUrl = process.env.REACT_APP_API_URL || 'https://track-trips.onrender.com';
+//   // Remove trailing slash if present
+//   const cleanUrl = envUrl.replace(/\/$/, '');
+//   // Ensure /api is appended
+//   return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+// };
+
 const getApiBaseUrl = () => {
-  const envUrl = process.env.REACT_APP_API_URL || 'https://track-trips.onrender.com';
-  // Remove trailing slash if present
-  const cleanUrl = envUrl.replace(/\/$/, '');
-  // Ensure /api is appended
-  return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+  // 1️⃣ If .env variable is explicitly set, use it
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) {
+    const clean = envUrl.trim().replace(/\/$/, ''); // remove trailing slash
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+
+  // 2️⃣ If frontend runs locally → use local backend
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1')
+  ) {
+    return 'http://localhost:5000/api'; // 👈 use your backend’s local port
+  }
+
+  // 3️⃣ Otherwise → use deployed Render backend
+  return 'https://track-trips.onrender.com/api';
 };
+
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -57,6 +79,8 @@ export const authAPI = {
   register: (data) => api.post('/users/register', data),
   login: (data) => api.post('/users/login', data),
   getCurrentUser: () => api.get('/users/me'),
+  forgotPassword: (data) => api.post('/users/forgot-password', data),
+  resetPassword: (data) => api.post('/users/reset-password', data),
 };
 
 // Groups API
@@ -95,6 +119,13 @@ export const expensesAPI = {
 // Settlements API
 export const settlementsAPI = {
   getTripSettlements: (tripId) => api.get(`/settlements/trips/${tripId}`),
+};
+// Payments API
+export const paymentsAPI = {
+  listTrip: (tripId) => api.get(`/payments/trip/${tripId}`),
+  create: (payload) => api.post(`/payments`, payload),
+  complete: (paymentId) => api.patch(`/payments/${paymentId}/complete`),
+  reset: (tripId, options = { mode: 'soft' }) => api.post(`/payments/trip/${tripId}/reset`, options),
 };
 
 // Places API

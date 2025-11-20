@@ -13,6 +13,7 @@ import { TripDetail } from './pages/TripDetail';
 import { GroupDetail } from './pages/GroupDetail';
 import { InviteJoin } from './pages/InviteJoin';
 import { useAuth } from './context/AuthContext';
+import { ResetPassword } from './pages/ResetPassword';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/dashboard"
         element={

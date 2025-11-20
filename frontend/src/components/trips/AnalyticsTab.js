@@ -2,10 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import { analyticsAPI } from '../../services/api';
 
 const COLORS = ['#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
+
+const formatTickLabel = (name = '') => {
+  if (!name) return '';
+  return name.length > 8 ? `${name.slice(0, 8)}…` : name;
+};
 
 export const AnalyticsTab = ({ tripId }) => {
   const [analytics, setAnalytics] = useState(null);
@@ -81,13 +98,27 @@ export const AnalyticsTab = ({ tripId }) => {
         <div className="w-full overflow-x-auto">
           <div className="min-w-[320px]">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.chart_data.users} margin={{ left: 8, right: 8, bottom: 16 }}>
+              <BarChart
+                data={analytics.chart_data.users}
+                margin={{ top: 10, right: 12, left: 0, bottom: 30 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-                <YAxis tick={{ fontSize: 11 }} width={40} />
-                <Tooltip wrapperStyle={{ fontSize: 12 }} />
+                <XAxis
+                  dataKey="name"
+                  interval={0}
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={formatTickLabel}
+                  angle={45}
+                  textAnchor="start"
+                  height={60}
+                />
+                <YAxis tick={{ fontSize: 11 }} width={45} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12 }}
+                  formatter={(value) => `₹${Number(value).toLocaleString('en-IN')}`}
+                />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="value" fill="#0ea5e9" radius={[4,4,0,0]} />
+                <Bar dataKey="value" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
