@@ -1,34 +1,53 @@
 // src/components/JoinGroupModal.js
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { groupsAPI } from '../services/api';
 
 export const JoinGroupModal = ({ isOpen, onClose, onSuccess, groupId }) => {
   const [formData, setFormData] = useState({ password: '', groupId: groupId || '' });
+  const [inviteInput, setInviteInput] = useState('');
+  const [mode, setMode] = useState(groupId ? 'id' : 'invite'); // 'invite' | 'id'
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     const groupIdToJoin = groupId || formData.groupId;
-    if (!groupIdToJoin) {
-      toast.error('Please enter a group ID');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      await groupsAPI.join({
-        group_id: groupIdToJoin,
-        password: formData.password || undefined
-      });
-      toast.success('Joined group successfully!');
-      setFormData({ password: '', groupId: '' });
-      if (onSuccess) onSuccess();
-      onClose();
+      if (!groupId && mode === 'invite') {
+        // Accept either raw token or full URL
+        const tokenMatch = inviteInput.match(/[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/);
+        const token = tokenMatch ? tokenMatch[0] : inviteInput.trim();
+        if (!token) {
+          toast.error('Please paste a valid invite token or link');
+          setLoading(false);
+          return;
+        }
+        await groupsAPI.joinByInvite(token);
+        toast.success('Joined group successfully via invite!');
+        setInviteInput('');
+        if (onSuccess) onSuccess();
+        onClose();
+      } else {
+        const effectiveGroupId = groupIdToJoin;
+        if (!effectiveGroupId) {
+          toast.error('Please enter a group ID');
+          setLoading(false);
+          return;
+        }
+        await groupsAPI.join({
+          group_id: effectiveGroupId,
+          password: formData.password || undefined
+        });
+        toast.success('Joined group successfully!');
+        setFormData({ password: '', groupId: '' });
+        if (onSuccess) onSuccess();
+        onClose();
+      }
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to join group');
     } finally {
@@ -59,31 +78,81 @@ export const JoinGroupModal = ({ isOpen, onClose, onSuccess, groupId }) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!groupId && (
                 <div>
+                  <div className="flex rounded-md bg-gray-100 dark:bg-gray-800 p-1 w-full">
+                    <button
+                      type="button"
+                      onClick={() => setMode('invite')}
+                      className={`flex-1 py-2 text-sm rounded-md ${mode === 'invite' ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}
+                    >
+                      Use Invite Link/Token
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMode('id')}
+                      className={`flex-1 py-2 text-sm rounded-md ${mode === 'id' ? 'bg-white dark:bg-gray-900 shadow text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}
+                    >
+                      Use Group ID
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!groupId && mode === 'invite' && (
+                <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Group ID *
+                    Paste invite link or token
                   </label>
                   <input
                     type="text"
-                    required
-                    value={formData.groupId}
-                    onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
+                    value={inviteInput}
+                    onChange={(e) => setInviteInput(e.target.value)}
                     className="input-field"
-                    placeholder="Enter group ID"
+                    placeholder="e.g., https://app/… or eyJhbGciOiJI…"
                   />
                 </div>
               )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Group Password (if required)
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="input-field"
-                  placeholder="Enter group password (leave empty if public)"
-                />
-              </div>
+
+              {(groupId || mode === 'id') && (
+                <>
+                  {!groupId && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Group ID *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.groupId}
+                        onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
+                        className="input-field"
+                        placeholder="Enter group ID"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Group Password (if required)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="input-field pr-10"
+                        placeholder="Enter group password (leave empty if public)"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="flex space-x-2 pt-4">
                 <button

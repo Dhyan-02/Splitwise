@@ -1,4 +1,4 @@
-# Splitwise - Group Trip Expense Splitter
+# TripSync - Group Trip Expense Splitter
 
 A modern, full-featured expense splitting application for group trips, built with React, Node.js, Express, and Supabase.
 
@@ -168,6 +168,30 @@ Splitwise/
 - Framer Motion
 - React Hot Toast
 - Lucide React (icons)
+
+## 🚀 Deployment
+
+**Ready to deploy?** Follow these guides in order:
+
+1. **👉 [PRE_DEPLOYMENT_SETUP.md](./PRE_DEPLOYMENT_SETUP.md)** - **Start here!** 
+   - Install all dependencies
+   - Set up environment files
+   - Verify Git configuration
+   - Test local builds
+
+2. **👉 [DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide:
+   - **Backend**: Render (Node.js/Express)
+   - **Frontend**: Vercel (React)
+   - Supabase database setup
+   - Environment variables configuration
+   - Troubleshooting tips
+   - Security checklist
+
+3. **👉 [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** - Quick checklist to track progress
+
+4. **👉 [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)** - Quick reference guide
+
+5. **👉 [KEEP_SERVER_AWAKE.md](./KEEP_SERVER_AWAKE.md)** - Keep Render server active 24/7 (free solutions)
 
 ## Notes
 

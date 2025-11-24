@@ -1,7 +1,43 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Ensure API URL always ends with /api
+// const getApiBaseUrl = () => {
+//   const envUrl = process.env.REACT_APP_API_URL || 'https://track-trips.onrender.com';
+//   // Remove trailing slash if present
+//   const cleanUrl = envUrl.replace(/\/$/, '');
+//   // Ensure /api is appended
+//   return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+// };
+
+const getApiBaseUrl = () => {
+  // 1️⃣ If .env variable is explicitly set, use it
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) {
+    const clean = envUrl.trim().replace(/\/$/, ''); // remove trailing slash
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+
+  // 2️⃣ If frontend runs locally → use local backend
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1')
+  ) {
+    return 'http://localhost:5000/api'; // 👈 use your backend’s local port
+  }
+
+  // 3️⃣ Otherwise → use deployed Render backend
+  return 'https://track-trips.onrender.com/api';
+};
+
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Log API base URL in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Base URL:', API_BASE_URL);
+}
 
 // Create axios instance
 const api = axios.create({
@@ -43,6 +79,8 @@ export const authAPI = {
   register: (data) => api.post('/users/register', data),
   login: (data) => api.post('/users/login', data),
   getCurrentUser: () => api.get('/users/me'),
+  forgotPassword: (data) => api.post('/users/forgot-password', data),
+  resetPassword: (data) => api.post('/users/reset-password', data),
 };
 
 // Groups API
@@ -53,7 +91,10 @@ export const groupsAPI = {
   getMyGroups: () => api.get('/groups/my-groups'),
   getById: (groupId) => api.get(`/groups/${groupId}`),
   getMembers: (groupId) => api.get(`/groups/${groupId}/members`),
+  removeMember: (groupId, username) => api.delete(`/groups/${groupId}/members`, { data: { username } }),
   createInvite: (groupId) => api.post(`/groups/${groupId}/invite`),
+  delete: (groupId) => api.delete(`/groups/${groupId}`),
+  updatePassword: (groupId, password) => api.patch(`/groups/${groupId}/password`, { password }),
 };
 
 // Trips API
@@ -61,6 +102,9 @@ export const tripsAPI = {
   create: (data) => api.post('/trips', data),
   getGroupTrips: (groupId) => api.get(`/trips/group/${groupId}`),
   getById: (tripId) => api.get(`/trips/${tripId}`),
+  getMembers: (tripId) => api.get(`/trips/${tripId}/members`),
+  addMember: (tripId, username) => api.post(`/trips/${tripId}/members`, { username }),
+  removeMember: (tripId, username) => api.delete(`/trips/${tripId}/members`, { data: { username } }),
   update: (tripId, data) => api.put(`/trips/${tripId}`, data),
   delete: (tripId) => api.delete(`/trips/${tripId}`),
 };
@@ -75,6 +119,13 @@ export const expensesAPI = {
 // Settlements API
 export const settlementsAPI = {
   getTripSettlements: (tripId) => api.get(`/settlements/trips/${tripId}`),
+};
+// Payments API
+export const paymentsAPI = {
+  listTrip: (tripId) => api.get(`/payments/trip/${tripId}`),
+  create: (payload) => api.post(`/payments`, payload),
+  complete: (paymentId) => api.patch(`/payments/${paymentId}/complete`),
+  reset: (tripId, options = { mode: 'soft' }) => api.post(`/payments/trip/${tripId}/reset`, options),
 };
 
 // Places API

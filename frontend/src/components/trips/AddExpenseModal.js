@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { expensesAPI, groupsAPI, tripsAPI } from '../../services/api';
+import { expensesAPI, tripsAPI, paymentsAPI } from '../../services/api';
 
 export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: initialMembers }) => {
   const [formData, setFormData] = useState({
@@ -25,13 +25,8 @@ export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: i
 
   const loadMembers = async () => {
     try {
-      // Get trip to find group_id
-      const tripRes = await tripsAPI.getById(tripId);
-      const groupId = tripRes.data.groups?.id || tripRes.data.group_id;
-      if (groupId) {
-        const membersRes = await groupsAPI.getMembers(groupId);
-        setMembers(membersRes.data);
-      }
+      const membersRes = await tripsAPI.getMembers(tripId);
+      setMembers(membersRes.data || []);
     } catch (error) {
       console.error('Failed to load members', error);
     }
@@ -44,6 +39,15 @@ export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: i
         ? prev.participants.filter(p => p !== username)
         : [...prev.participants, username]
     }));
+  };
+
+  const selectAllParticipants = () => {
+    const allUsernames = members.map(m => m.username);
+    setFormData(prev => ({ ...prev, participants: allUsernames }));
+  };
+
+  const clearAllParticipants = () => {
+    setFormData(prev => ({ ...prev, participants: [] }));
   };
 
   const handleSubmit = async (e) => {
@@ -67,6 +71,11 @@ export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: i
       toast.success('Expense added successfully!');
       setFormData({ amount: '', description: '', category: '', participants: [] });
       onSuccess();
+      try {
+        await paymentsAPI.reset(tripId, { mode: 'soft' });
+      } catch (resetErr) {
+        console.error('Failed to sync payments after adding expense', resetErr);
+      }
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to add expense');
     } finally {
@@ -144,9 +153,27 @@ export const AddExpenseModal = ({ isOpen, onClose, onSuccess, tripId, members: i
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Participants *
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Participants *
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={selectAllParticipants}
+                      className="text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100"
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllParticipants}
+                      className="text-xs px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-2">
                   {members.map((member) => (
                     <label

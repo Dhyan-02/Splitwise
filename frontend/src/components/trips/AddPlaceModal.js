@@ -9,11 +9,11 @@ export const AddPlaceModal = ({ isOpen, onClose, onSuccess, tripId }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    latitude: '',
-    longitude: ''
+    location: ''
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,13 +24,12 @@ export const AddPlaceModal = ({ isOpen, onClose, onSuccess, tripId }) => {
         trip_id: tripId,
         name: formData.name,
         description: formData.description || null,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null
+        location: formData.location || null
       };
       
       await placesAPI.add(data, photoFile);
       toast.success('Place added successfully!');
-      setFormData({ name: '', description: '', latitude: '', longitude: '' });
+      setFormData({ name: '', description: '', location: '' });
       setPhotoFile(null);
       onSuccess();
     } catch (error) {
@@ -38,6 +37,37 @@ export const AddPlaceModal = ({ isOpen, onClose, onSuccess, tripId }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getCurrentLocation = () => {
+    if (!('geolocation' in navigator)) {
+      toast.error('Geolocation is not supported in this browser');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // Reverse geocode to a human-readable location name
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
+          .then((r) => r.json())
+          .then((j) => {
+            const display = j?.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            setFormData((prev) => ({ ...prev, location: display }));
+          })
+          .catch(() => {
+            setFormData((prev) => ({ ...prev, location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` }));
+          })
+          .finally(() => setLocating(false));
+        toast.success('Location name captured');
+      },
+      (err) => {
+        setLocating(false);
+        const msg = err.code === 1 ? 'Permission denied for location' : 'Failed to get current location';
+        toast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   return (
@@ -88,32 +118,21 @@ export const AddPlaceModal = ({ isOpen, onClose, onSuccess, tripId }) => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Latitude
-                  </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Location
+                </label>
+                <div className="flex gap-2">
                   <input
-                    type="number"
-                    step="any"
-                    value={formData.latitude}
-                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                    className="input-field"
-                    placeholder="e.g., 40.7128"
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="input-field flex-1"
+                    placeholder="e.g., Marine Drive, Mumbai"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Longitude
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={formData.longitude}
-                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                    className="input-field"
-                    placeholder="e.g., -74.0060"
-                  />
+                  <button type="button" onClick={getCurrentLocation} className="btn-secondary whitespace-nowrap">
+                    {locating ? 'Getting…' : 'Use current'}
+                  </button>
                 </div>
               </div>
 

@@ -8,16 +8,40 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import settlementRoutes from './routes/settlementRoutes.js';
 import placeRoutes from './routes/placeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import paymentsRoutes from './routes/paymentsRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'https://track-trips.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
+  credentials: true,    
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.get('/', (req, res) => res.send('✅ Splitwise backend running'));
+// Health check endpoint (optimized for keep-alive pings)
+app.get('/', (req, res) => res.send('✅ TripSync backend running'));
+
+// Additional health check endpoint for monitoring services
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    service: 'TripSync Backend'
+  });
+});
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -27,6 +51,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Error handling middleware (must be last)
 app.use(notFound);

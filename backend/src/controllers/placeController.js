@@ -3,7 +3,7 @@ import { supabase } from '../services/supabaseClient.js';
 
 export const addPlace = async (req, res, next) => {
   try {
-    const { trip_id, name, description, latitude, longitude } = req.body;
+    const { trip_id, name, description, location } = req.body;
     const username = req.user.username;
 
     // Verify access to trip
@@ -11,7 +11,7 @@ export const addPlace = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -53,7 +53,7 @@ export const addPlace = async (req, res, next) => {
 
     const { data, error } = await supabase
       .from('places_visited')
-      .insert([{ trip_id, name, description, latitude, longitude, photo_url }])
+      .insert([{ trip_id, name, description, location, photo_url, created_by: username }])
       .select();
 
     if (error) throw error;
@@ -73,7 +73,7 @@ export const getTripPlaces = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -91,14 +91,30 @@ export const getTripPlaces = async (req, res, next) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
-    const { data, error } = await supabase
+    // Get trip members to filter places
+    const { data: tripMembers, error: tripMemError } = await supabase
+      .from('trip_members')
+      .select('username')
+      .eq('trip_id', trip_id);
+
+    if (tripMemError) throw tripMemError;
+    const tripMemberUsernames = new Set((tripMembers || []).map(m => m.username));
+
+    // Get all places for the trip
+    const { data: allPlaces, error: placesError } = await supabase
       .from('places_visited')
       .select('*')
       .eq('trip_id', trip_id)
       .order('visited_time', { ascending: false });
 
-    if (error) throw error;
-    res.json(data);
+    if (placesError) throw placesError;
+
+    // Filter places to only include those created by trip members
+    const filteredPlaces = (allPlaces || []).filter(place => 
+      place.created_by && tripMemberUsernames.has(place.created_by)
+    );
+
+    res.json(filteredPlaces);
   } catch (err) {
     next(err);
   }
@@ -115,7 +131,7 @@ export const updatePlace = async (req, res, next) => {
       .from('places_visited')
       .select('trip_id, trips(group_id)')
       .eq('id', place_id)
-      .single();
+      .maybeSingle();
 
     if (placeError) throw placeError;
     if (!place) {
@@ -154,9 +170,9 @@ export const deletePlace = async (req, res, next) => {
     // Get place and verify access
     const { data: place, error: placeError } = await supabase
       .from('places_visited')
-      .select('trip_id, trips(group_id)')
+      .select('trip_id, created_by, trips(group_id)')
       .eq('id', place_id)
-      .single();
+      .maybeSingle();
 
     if (placeError) throw placeError;
     if (!place) {
@@ -172,6 +188,11 @@ export const deletePlace = async (req, res, next) => {
 
     if (!membership) {
       return res.status(403).json({ error: 'You are not a member of this group' });
+    }
+
+    // Only uploader can delete
+    if ((place.created_by || '').trim().toLowerCase() !== (username || '').trim().toLowerCase()) {
+      return res.status(403).json({ error: 'Only the uploader can delete this place' });
     }
 
     const { error } = await supabase.from('places_visited').delete().eq('id', place_id);

@@ -100,9 +100,34 @@ CREATE TABLE IF NOT EXISTS trips (
   start_date DATE,
   end_date DATE,
   description TEXT,
+  created_by VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Trip members table (optional members subset per trip)
+CREATE TABLE IF NOT EXISTS trip_members (
+  trip_id UUID REFERENCES trips(id) ON DELETE CASCADE,
+  username VARCHAR(50) REFERENCES users(username) ON DELETE CASCADE,
+  added_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (trip_id, username)
+);
+
+-- Ensure trip_members exists if migrating
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' AND table_name = 'trip_members'
+  ) THEN
+    CREATE TABLE public.trip_members (
+      trip_id UUID REFERENCES trips(id) ON DELETE CASCADE,
+      username VARCHAR(50) REFERENCES users(username) ON DELETE CASCADE,
+      added_at TIMESTAMP DEFAULT NOW(),
+      PRIMARY KEY (trip_id, username)
+    );
+  END IF;
+END $$;
 
 -- Expenses table (depends on trips + users) - NEW structure
 CREATE TABLE expenses (
@@ -120,13 +145,26 @@ CREATE TABLE expenses (
 CREATE TABLE IF NOT EXISTS places_visited (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id UUID REFERENCES trips(id) ON DELETE CASCADE NOT NULL,
+  created_by VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL,
   name VARCHAR(255) NOT NULL,
   description TEXT,
   photo_url TEXT,
-  latitude DECIMAL(10, 8),
-  longitude DECIMAL(11, 8),
+  location VARCHAR(255),
   visited_time TIMESTAMP DEFAULT NOW()
 );
+
+-- Add created_by to places_visited if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'places_visited' 
+    AND column_name = 'created_by'
+  ) THEN
+    ALTER TABLE public.places_visited ADD COLUMN created_by VARCHAR(50) REFERENCES users(username) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Drop old indexes if they exist
 DROP INDEX IF EXISTS idx_group_members_group;
@@ -140,6 +178,8 @@ DROP INDEX IF EXISTS idx_places_trip;
 CREATE INDEX idx_group_members_group ON group_members(group_id);
 CREATE INDEX idx_group_members_user ON group_members(username);
 CREATE INDEX idx_trips_group ON trips(group_id);
+CREATE INDEX IF NOT EXISTS idx_trip_members_trip ON trip_members(trip_id);
+CREATE INDEX IF NOT EXISTS idx_trip_members_user ON trip_members(username);
 CREATE INDEX idx_expenses_trip ON expenses(trip_id);
 CREATE INDEX idx_expenses_payer ON expenses(payer_username);
 CREATE INDEX idx_places_trip ON places_visited(trip_id);

@@ -1,10 +1,10 @@
 // src/pages/Register.js
 import React, { useState, useEffect } from 'react';
+import { FaUsers, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { FaUsers } from 'react-icons/fa';
 
 export const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ export const Register = () => {
     full_name: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -100,15 +101,26 @@ export const Register = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password *
             </label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="input-field"
-              placeholder="Choose a password (min 6 characters)"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={8}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="input-field pr-10"
+                placeholder="Min 8 chars, 1 number, 1 letter"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Use at least 8 characters with a mix of letters and numbers.</p>
           </div>
 
           <button

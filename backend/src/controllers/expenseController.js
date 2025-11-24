@@ -1,5 +1,6 @@
 // src/controllers/expenseController.js
 import { supabase } from '../services/supabaseClient.js';
+import { syncPendingPaymentsForTrip } from './paymentsController.js';
 
 export const addExpense = async (req, res, next) => {
   try {
@@ -11,7 +12,7 @@ export const addExpense = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -30,13 +31,13 @@ export const addExpense = async (req, res, next) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
-    // Verify all participants are members
-    const { data: allMembers } = await supabase
-      .from('group_members')
+    // Verify all participants are trip members
+    const { data: tripMembers } = await supabase
+      .from('trip_members')
       .select('username')
-      .eq('group_id', trip.group_id);
+      .eq('trip_id', trip_id);
 
-    const memberUsernames = allMembers.map(m => m.username);
+    const memberUsernames = tripMembers.map(m => m.username);
     const invalidParticipants = participants.filter(p => !memberUsernames.includes(p));
 
     if (invalidParticipants.length > 0) {
@@ -52,6 +53,12 @@ export const addExpense = async (req, res, next) => {
       .select();
 
     if (error) throw error;
+
+    try {
+      await syncPendingPaymentsForTrip(trip_id, payer_username);
+    } catch (syncErr) {
+      console.error('Failed to sync payments after adding expense:', syncErr);
+    }
 
     res.status(201).json({ message: 'Expense added', expense: expense[0] });
   } catch (err) {
@@ -69,7 +76,7 @@ export const getTripExpenses = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
     if (!trip) {
@@ -88,15 +95,38 @@ export const getTripExpenses = async (req, res, next) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
+    // Get trip members to filter expenses
+    const { data: tripMembers, error: tripMemError } = await supabase
+      .from('trip_members')
+      .select('username')
+      .eq('trip_id', trip_id);
+
+    if (tripMemError) throw tripMemError;
+    const tripMemberUsernames = new Set((tripMembers || []).map(m => m.username));
+
     // Get expenses
-    const { data, error } = await supabase
+    const { data: allExpenses, error } = await supabase
       .from('expenses')
       .select('*')
       .eq('trip_id', trip_id)
       .order('timestamp', { ascending: false });
 
     if (error) throw error;
-    res.json(data);
+
+    // Filter expenses to only include those where payer and all participants are trip members
+    const filteredExpenses = (allExpenses || []).filter(expense => {
+      // Check if payer is a trip member
+      if (!tripMemberUsernames.has(expense.payer_username)) {
+        return false;
+      }
+      // Check if all participants are trip members
+      if (expense.participants && expense.participants.length > 0) {
+        return expense.participants.every(p => tripMemberUsernames.has(p));
+      }
+      return true;
+    });
+
+    res.json(filteredExpenses);
   } catch (err) {
     next(err);
   }
@@ -112,7 +142,7 @@ export const deleteExpense = async (req, res, next) => {
       .from('expenses')
       .select('trip_id, payer_username')
       .eq('id', expense_id)
-      .single();
+      .maybeSingle();
 
     if (expError) throw expError;
     if (!expense) {
@@ -124,7 +154,7 @@ export const deleteExpense = async (req, res, next) => {
       .from('trips')
       .select('group_id')
       .eq('id', expense.trip_id)
-      .single();
+      .maybeSingle();
 
     if (tripError) throw tripError;
 
@@ -140,6 +170,21 @@ export const deleteExpense = async (req, res, next) => {
       return res.status(403).json({ error: 'You are not a member of this group' });
     }
 
+    // Check if trip already has completed settlements
+    const { data: completedPayment, error: completedErr } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('trip_id', expense.trip_id)
+      .eq('status', 'completed')
+      .limit(1)
+      .maybeSingle();
+    if (completedErr && completedErr.code !== 'PGRST116') throw completedErr;
+    if (completedPayment) {
+      return res.status(400).json({
+        error: 'Cannot delete this expense because completed settlements exist for the trip. Undo settlements before deleting.',
+      });
+    }
+
     // Only payer can delete
     if (expense.payer_username !== username) {
       return res.status(403).json({ error: 'Only the payer can delete this expense' });
@@ -147,6 +192,12 @@ export const deleteExpense = async (req, res, next) => {
 
     const { error } = await supabase.from('expenses').delete().eq('id', expense_id);
     if (error) throw error;
+
+    try {
+      await syncPendingPaymentsForTrip(expense.trip_id, username);
+    } catch (syncErr) {
+      console.error('Failed to sync payments after expense delete:', syncErr);
+    }
 
     res.json({ message: 'Expense deleted successfully' });
   } catch (err) {
